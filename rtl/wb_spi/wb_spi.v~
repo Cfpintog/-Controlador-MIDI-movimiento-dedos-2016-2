@@ -90,7 +90,7 @@ module wb_spi(
 						end
 					4'b0010:
 							spi_cs  <=  wb_dat_i[7:0];
-					4'b0011: 
+					4'b0100: 
 							divisor <=  wb_dat_i[7:0];
 				endcase
 			end
