@@ -13,6 +13,20 @@
 
 #define UART_RXBUFSIZE 32
 
+#define DO_3	   	0x30  //do  3ra octava
+#define RE_3	 	0x32  //re  3ra octava
+#define MI_3		0x34  //mi  3ra octava
+#define FA_3		0x35  //fa  3ra octava
+#define SOL_3		0x37  //sol 3ra octava
+#define LA_3		0x39  //la  3ra octava
+#define SI_3		0x3B  //si  3ra octava
+#define NOTE_ON 	0x90  //nota on canal 1
+#define VEL_ON 		0x40  //velocidad de nota 64
+#define VEL_OFF		0x00  //apagado de nota
+#define CTRL_CH 	0xB0  //control change canal 1
+#define VOL_CH 		0x07  //cambio de volumen
+
+
 
 /****************************************************************************
  * Types
@@ -72,14 +86,14 @@ void tic_init();
  * GPIO0
  */
 typedef struct {
-	volatile uint32_t gpio_in;//00	
-	volatile uint32_t gpio_o;//01
-	volatile uint32_t gpio_dir;//10
+	volatile uint32_t gpio_in;//0x00	
+	volatile uint32_t gpio_o;//0x04
+	volatile uint32_t gpio_dir;//0x08
 	
 } gpio_t;
 char gpio_get();
 
-void gpio_set(char g);
+
 
 char gpio_dir_get();
 
@@ -107,14 +121,15 @@ char uart_getchar();
  */
 
 typedef struct {
-   volatile uint32_t rxtx;
-   volatile uint32_t run;
-   volatile uint32_t cs;
-   volatile uint32_t divisor;
-   } spi_t;
+   volatile uint32_t rxtx; 	//0x00
+   volatile uint32_t run;	//0x04
+   volatile uint32_t cs;	//0x08
+   volatile uint32_t divisor;	//0x0c
+    } spi_t;
 
 void spi_init();
-void spi_putchar(uint32_t c, uint32_t d);
+void spi_putchar0();
+void spi_putchar(uint32_t c);
 char spi_getchar();
 
 /***************************************************************************
@@ -131,6 +146,8 @@ typedef struct {
 /***************************************************************************
  * Pointer to actual components
  */
+
+extern uint8_t v;0xFFFFFFFD
 extern timer_t  *timer0;
 extern uart_t   *uart0; 
 extern gpio_t   *gpio0; 

@@ -2,11 +2,12 @@
 
 uart_t  *uart0  = (uart_t *)   0x20000000;
 timer_t *timer0 = (timer_t *)  0x30000000;
-gpio_t  *gpio0  = (gpio_t *)   0x10000000;
+gpio_t  *gpio0  = (gpio_t *)   0x40000000;
 //uart_t  *uart1  = (uart_t *) 0x20000000;
 spi_t   *spi0   = (spi_t *)    0x50000000;
 i2c_t   *i2c0   = (i2c_t *)    0x60000000;
 
+uint8_t v;
 isr_ptr_t isr_table[32];
 
 void prueba()
@@ -21,6 +22,7 @@ void prueba()
 
 }
 void tic_isr();
+
 /***************************************************************************
  * IRQ handling
  */
@@ -29,13 +31,24 @@ void isr_null()
 }
 
 void irq_handler(uint32_t pending)
-{
-	int i;
+//{ if (pending==0xFFFFFFFD)
 
-	for(i=0; i<32; i++) {
-		if (pending & 0x01) (*isr_table[i])();
-		pending >>= 1;
-	}
+
+{
+		uart_putchar(CTRL_CH);//0xB0
+		uart_putchar(VOL_CH);//0x07
+		uart_putchar(v);
+//		pending=0xFFFFFFFF;
+			
+	timer0->counter0 = 0;
+	timer0->tcr0     = TIMER_EN |TIMER_AR | TIMER_IRQEN;
+
+	//int i;	
+	//for(i=0; i<32; i++) {
+	//	if (pending & 0x01) (*isr_table[i])();
+	//	pending >>= 1;
+
+	//}
 }
 
 void isr_init()
@@ -100,13 +113,10 @@ void tic_isr()
 void tic_init()
 {
 	tic_msec = 0;
-
 	// Setup timer0.0
-	timer0->compare0 = (FCPU/10000);
+	timer0->compare0 = (FCPU/1000)*210;
 	timer0->counter0 = 0;
-	timer0->tcr0     = TIMER_EN | TIMER_AR | TIMER_IRQEN;
-
-	isr_register(1, &tic_isr);
+	timer0->tcr0     = TIMER_EN |TIMER_AR | TIMER_IRQEN;
 }
 
 /***************************************************************************
@@ -117,10 +127,6 @@ char gpio_get()
 return gpio0->gpio_in;
 }
 
-void gpio_set(char g)
-{
-	gpio0->gpio_in=g;
-}
 
 char gpio_dir_get()
 {
@@ -170,19 +176,25 @@ void uart_putstr(char *str)
 /***************************************************************************
  * SPI Functions
  */
-void spi_init(uint32_t a)
-{	while(spi0->run ==1);
-	spi0->divisor=a;
+void spi_init()
+{		
 }
-void spi_putchar(uint32_t c, uint32_t d)
+
+void spi_putchar0()
+{
+	while(spi0->run == 1);
+	spi0->cs = 0;
+	spi0->rxtx = 0x00;
+}
+void spi_putchar(uint32_t c)
 {
 	while(spi0->run == 1);
 	spi0->rxtx = c;
-	spi0->cs = d;
-		
+			
 }
 char spi_getchar()
 {
 	while(spi0->run == 1);
+
 	return spi0->rxtx;	
 }
