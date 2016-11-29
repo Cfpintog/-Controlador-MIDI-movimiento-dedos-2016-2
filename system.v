@@ -11,7 +11,7 @@ module system
 //	parameter   bootram_file     = "../firmware/boot0-serial/image.ram",
 	parameter   bootram_file     = "../firmware/hw-test/image.ram",
 	parameter   clk_freq         = 100000000,
-	parameter   uart_baud_rate   = 115200
+	parameter   uart_baud_rate   = 31250
 ) (
 	input             clk,
 	// Debug 
@@ -25,6 +25,11 @@ module system
 	input             spi_miso, 
 	output            spi_mosi,
 	output            spi_clk,
+	output		  spi_cs,
+
+	//GPIO	
+	inout [7:0] gpio_io,
+	
 	// 12c
 	inout             i2c_sda, 
 	inout             i2c_scl
@@ -170,7 +175,7 @@ conbus #(
 	.s0_addr(3'b000),	// bram     0x00000000 
 	.s1_addr(3'b010),	// uart0    0x20000000 
 	.s2_addr(3'b011),	// timer    0x30000000 
-	.s3_addr(3'b001),   	// gpio     0x10000000 
+	.s3_addr(3'b100),   // gpio     0x40000000 
 	.s4_addr(3'b101),	// spi      0x50000000 
 	.s5_addr(3'b110)	// i2c      0x60000000 
 ) conbus0(
@@ -345,6 +350,8 @@ wb_uart #(
 wire spi0_mosi;
 wire spi0_miso;
 wire spi0_clk;
+wire spi0_cs;
+
 
 wb_spi  spi0 (
 	.clk( clk ),
@@ -360,29 +367,32 @@ wb_spi  spi0 (
 	.wb_ack_o( spi0_ack ), 
 	.spi_sck(spi0_clk),
 	.spi_mosi( spi0_mosi ),
-	.spi_miso( spi0_miso )
+	.spi_miso( spi0_miso ),
+	.spi_cs( spi0_cs )
+	
+	
 );
 //---------------------------------------------------------------------------
 // i2c0
 //---------------------------------------------------------------------------
- wire i2c0_sda;
- wire i2c0_scl;
+// wire i2c0_sda;
+ //wire i2c0_scl;
 
 // TODO : interruption and asynchronous reset
- i2c_master_wb_top  i2c0 (
- 	.wb_clk_i( clk ),
-	.wb_rst_i( ~rst ),
+ //i2c_master_wb_top  i2c0 (
+ //	.wb_clk_i( clk ),
+//	.wb_rst_i( ~rst ),
 	//
-	.wb_adr_i( i2c0_adr ),
-	.wb_dat_i( i2c0_dat_w ),
-	.wb_dat_o( i2c0_dat_r ),
-	.wb_stb_i( i2c0_stb ),
-	.wb_cyc_i( i2c0_cyc ),
-	.wb_we_i(  i2c0_we ),
-	.wb_ack_o( i2c0_ack ), 
-	.scl(i2c0_scl),
-	.sda( i2c0_sda )
-);
+//	.wb_adr_i( i2c0_adr ),
+//	.wb_dat_i( i2c0_dat_w ),
+//	.wb_dat_o( i2c0_dat_r ),
+//	.wb_stb_i( i2c0_stb ),
+//	.wb_cyc_i( i2c0_cyc ),
+//	.wb_we_i(  i2c0_we ),
+//	.wb_ack_o( i2c0_ack ), 
+//	.scl(i2c0_scl),
+//	.sda( i2c0_sda )
+//);
 
 //---------------------------------------------------------------------------
 // timer0
@@ -436,7 +446,16 @@ assign led       = ~uart_txd;
 assign spi_mosi  = spi0_mosi;
 assign spi0_miso = spi_miso;
 assign spi_clk = spi0_clk;
+assign spi_cs = spi0_cs;
 
-assign i2c_sda = i2c0_sda;
-assign i2c_scl = i2c0_scl;
+assign gpio_io[0] = gpio0_io[0]; 
+assign gpio_io[1] = gpio0_io[1]; 
+assign gpio_io[2] = gpio0_io[2]; 
+assign gpio_io[3] = gpio0_io[3]; 
+assign gpio_io[4] = gpio0_io[4]; 
+assign gpio_io[5] = gpio0_io[5]; 
+assign gpio_io[6] = gpio0_io[6]; 
+assign gpio_io[7] = gpio0_io[7]; 
+
+
 endmodule 

@@ -39,6 +39,8 @@ system #(
 	// Uart
 	.uart_rxd(  uart_rxd  ),
 	.uart_txd(  uart_txd  )
+	
+	
 );
 
 /* Clocking device */
