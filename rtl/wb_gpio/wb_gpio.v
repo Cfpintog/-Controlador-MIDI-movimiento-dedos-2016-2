@@ -121,11 +121,7 @@ module wb_gpio(
           2'b00:begin  
             wb_dat_o[31:8]<=0;
             wb_dat_o[7:0] <= gpio_i;
-	  end
-	  2'b10:begin
-	    wb_dat_o[31:8]<=0;
-            wb_dat_o[7:0] <= gpio_dir;
-	  end
+          end
           default: wb_dat_o <= 32'b0; 
          endcase
         end

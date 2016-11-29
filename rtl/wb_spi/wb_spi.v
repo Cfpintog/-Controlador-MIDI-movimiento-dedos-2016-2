@@ -18,7 +18,7 @@ module wb_spi(
 	output              spi_sck,
 	output              spi_mosi,
 	input               spi_miso,
-	output reg   [7:0]  spi_cs
+	output reg   	    spi_cs
 );
 
 
@@ -29,7 +29,7 @@ module wb_spi(
 	wire wb_wr = wb_stb_i & wb_cyc_i & ~ack & wb_we_i;
 
 	
-	reg [2:0] bitcount;
+	reg [3:0] bitcount;
 	reg ilatch;
 	reg run;
 
@@ -40,16 +40,16 @@ module wb_spi(
 	reg [7:0] divisor;
 
 	//data shift register
-	reg [7:0] sreg;
+	reg [10:0] sreg;
 
 	assign spi_sck = sck;
-	assign spi_mosi = sreg[7];
+	assign spi_mosi = sreg[10];
 
 	always @(posedge clk) begin
 		if (reset == 1'b1) begin
 			ack      <= 0;
 			sck <= 1'b0;
-			bitcount <= 3'b000;
+			bitcount <= 4'b0000;
 			run <= 1'b0;
 			prescaler <= 8'h00;
 			divisor <= 8'hff;
@@ -61,11 +61,13 @@ module wb_spi(
 					sck <= ~sck;
 					if(sck == 1'b1) begin
 						bitcount <= bitcount + 1;
-						if(bitcount == 3'b111) begin
+						if(bitcount == 4'b1011) begin
 							run <= 1'b0;
+							spi_cs <= 1'b1;
+							bitcount <= 4'b0000;
 						end
 						
-						sreg [7:0] <= {sreg[6:0], ilatch};
+						sreg [10:0] <= {sreg[9:0], ilatch};
 					end else begin
 						ilatch <= spi_miso;
 					end
@@ -76,7 +78,7 @@ module wb_spi(
 			
 			if (wb_rd) begin           // read cycle
 				case (wb_adr_i[5:2])
-					4'b0000: wb_dat_o <= sreg;
+					4'b0000: wb_dat_o <= sreg[10:3];
 					4'b0001: wb_dat_o <= {7'b0000000 , run};
 				endcase
 			end
@@ -89,7 +91,7 @@ module wb_spi(
 							run     <=  1'b1;
 						end
 					4'b0010:
-							spi_cs  <=  wb_dat_i[7:0];
+							spi_cs  <=  wb_dat_i[0];
 					4'b0011: 
 							divisor <=  wb_dat_i[7:0];
 				endcase
@@ -99,3 +101,4 @@ module wb_spi(
 
 
 endmodule
+
